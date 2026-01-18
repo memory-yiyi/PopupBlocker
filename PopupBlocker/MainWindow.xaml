@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PopupBlocker"
+        xmlns:vm="clr-namespace:PopupBlocker.ViewModels"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:PopupInterceptorViewModel}"
         Title="弹窗拦截器" Height="550" Width="900">
     <Grid>
         <Grid.RowDefinitions>
@@ -15,14 +16,20 @@
 
         <!-- 控制区域 -->
         <StackPanel Grid.Row="0" Margin="10" Orientation="Horizontal">
-            <Button x:Name="btnStart" Content="启动拦截" Click="BtnStart_Click" Width="80" Margin="0,0,10,0"/>
-            <Button x:Name="btnStop" Content="停止拦截" Click="BtnStop_Click" Width="80" Margin="0,0,10,0" IsEnabled="False"/>
-            <Button x:Name="btnTest" Content="测试弹窗" Click="BtnTest_Click" Width="80" Margin="0,0,10,0"/>
+            <Button x:Name="btnStart" Content="启动拦截" Width="80" Margin="0,0,10,0"
+                    Command="{Binding StartInterceptCommand}"/>
+            <Button x:Name="btnStop" Content="停止拦截" Width="80" Margin="0,0,10,0"
+                    Command="{Binding StopInterceptCommand}"/>
+            <Button x:Name="btnTest" Content="测试弹窗" Width="80" Margin="0,0,10,0" Visibility="Collapsed"
+                    Command="{x:Static vm:PopupInterceptorViewModel.TestPopupCommand}"/>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,0,10,0"/>
-            <Button x:Name="btnExport" Content="导出配置" Click="BtnExport_Click" Width="80" Margin="0,0,10,0"/>
-            <Button x:Name="btnImport" Content="导入配置" Click="BtnImport_Click" Width="80" Margin="0,0,10,0"/>
-            <Button x:Name="btnResetCount" Content="重新计数" Click="BtnResetCount_Click" Width="80" Margin="0,0,10,0"/>
-            <TextBlock x:Name="tbStatus" Text="状态: 未启动" VerticalAlignment="Center" Margin="10,0"/>
+            <Button x:Name="btnExport" Content="导出配置" Width="80" Margin="0,0,10,0"
+                    Command="{Binding ExportRulesCommand}"/>
+            <Button x:Name="btnImport" Content="导入配置" Width="80" Margin="0,0,10,0"
+                    Command="{Binding ImportRulesCommand}"/>
+            <Button x:Name="btnResetCount" Content="重新计数" Width="80" Margin="0,0,10,0"
+                    Command="{Binding ResetAllCountsCommand}"/>
+            <TextBlock x:Name="tbStatus" Text="{Binding Status}" VerticalAlignment="Center" Margin="10,0"/>
         </StackPanel>
 
         <!-- 主内容区域 -->
@@ -40,7 +47,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    
+
                     <!-- 添加规则区域 -->
                     <GroupBox Grid.Row="0" Header="添加新规则" Margin="5">
                         <StackPanel Orientation="Vertical" Margin="5">
@@ -52,7 +59,15 @@
                                 </ComboBox>
                                 <TextBox x:Name="txtRulePattern" Width="250" Margin="10,0,0,0" 
                                          ToolTip="输入要拦截的模式"/>
-                                <Button Content="添加规则" Click="BtnAddRule_Click" Width="80" Margin="10,0,0,0"/>
+                                <Button Content="添加规则" Width="80" Margin="10,0,0,0"
+                                        Command="{Binding AddRuleCommand}">
+                                    <Button.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource RuleInputConverter}">
+                                            <Binding ElementName="txtRulePattern" Path="Text"/>
+                                            <Binding ElementName="cmbRuleType" Path="SelectedIndex"/>
+                                        </MultiBinding>
+                                    </Button.CommandParameter>
+                                </Button>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="提示: 进程名如 chrome.exe，窗口类名如 #32770，标题关键词如 广告" 
@@ -60,18 +75,17 @@
                             </StackPanel>
                         </StackPanel>
                     </GroupBox>
-                    
+
                     <!-- 规则列表 -->
-                    <ListView x:Name="lvRules" Grid.Row="1" Margin="5">
+                    <ListView x:Name="lvRules" Grid.Row="1" Margin="5" ItemsSource="{Binding RulesView}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="启用" Width="60">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox IsChecked="{Binding Enabled}" 
-                                                      Checked="BtnToggleRule_Click" 
-                                                      Unchecked="BtnToggleRule_Click"
-                                                      Tag="{Binding}"/>
+                                            <CheckBox IsChecked="{Binding Enabled}"
+                                                      Command="{Binding DataContext.ToggleRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -89,8 +103,9 @@
                                 <GridViewColumn Header="操作" Width="80">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="移除" Click="BtnRemoveRule_Click" 
-                                                    Tag="{Binding}" Width="60"/>
+                                            <Button Content="移除" Width="60"
+                                                    Command="{Binding DataContext.RemoveRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -104,7 +119,7 @@
         <!-- 状态栏 -->
         <StatusBar Grid.Row="2">
             <StatusBarItem>
-                <TextBlock x:Name="tbStatusInfo" Text="就绪"/>
+                <TextBlock x:Name="tbStatusInfo" Text="{Binding StatusInfo}"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>

@@ -1,4 +1,3 @@
-using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -14,7 +13,7 @@ namespace PopupBlocker
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
             var stackPanel = new StackPanel();
-            
+
             var label = new Label
             {
                 Content = "这是一个测试弹窗内容",
@@ -32,7 +31,7 @@ namespace PopupBlocker
 
             stackPanel.Children.Add(label);
             stackPanel.Children.Add(button);
-            
+
             Content = stackPanel;
         }
 
