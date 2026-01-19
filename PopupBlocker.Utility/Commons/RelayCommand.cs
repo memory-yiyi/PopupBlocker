@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace PopupBlocker.Utils
+namespace PopupBlocker.Utility.Commons
 {
     public class RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null) : ICommand
     {

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PopupBlocker.Utils
+namespace PopupBlocker.Utility.Windows
 {
     public static class WinAPI
     {

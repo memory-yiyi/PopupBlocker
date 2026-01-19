@@ -1,4 +1,4 @@
-﻿namespace PopupBlocker.Utils
+﻿namespace PopupBlocker.Utility.Commons
 {
     public class Singleton<T> where T : class, new()
     {

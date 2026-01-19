@@ -1,11 +1,11 @@
+using Microsoft.Win32;
 using PopupBlocker.Models;
 using PopupBlocker.Services;
-using PopupBlocker.Utils;
+using PopupBlocker.Utility.Commons;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
-using Microsoft.Win32;
 using System.Windows.Input;
 using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Models.InterceptorRule>;
 

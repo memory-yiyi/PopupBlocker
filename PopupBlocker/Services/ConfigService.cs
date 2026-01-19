@@ -1,8 +1,7 @@
+using PopupBlocker.Models;
 using System.Collections;
 using System.IO;
 using System.Text.Json;
-using PopupBlocker.Models;
-using PopupBlocker.Utils;
 using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Models.InterceptorRule>;
 
 namespace PopupBlocker.Services
@@ -23,7 +22,7 @@ namespace PopupBlocker.Services
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         // 日志服务，用于记录日志信息
-        private readonly LoggerService _logger = Singleton<LoggerService>.Instance;
+        private readonly LoggerService _logger = Utility.Commons.Singleton<LoggerService>.Instance;
         #endregion
 
         public ConfigService()

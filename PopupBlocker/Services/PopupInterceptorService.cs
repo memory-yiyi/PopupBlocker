@@ -1,6 +1,7 @@
-using System.Diagnostics;
 using PopupBlocker.Models;
-using PopupBlocker.Utils;
+using PopupBlocker.Utility.Commons;
+using PopupBlocker.Utility.Windows;
+using System.Diagnostics;
 
 namespace PopupBlocker.Services
 {
@@ -89,7 +90,7 @@ namespace PopupBlocker.Services
                 var className = _classBuilder.ToString();
 
                 _ = WinAPI.GetWindowThreadProcessId(hWnd, out var processId);
-                var process = Process.GetProcessById((int)processId);
+                using var process = Process.GetProcessById((int)processId);
                 var processName = process.ProcessName;
 
                 // 检查所有启用的规则

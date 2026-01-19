@@ -1,5 +1,4 @@
 using PopupBlocker.Services;
-using PopupBlocker.Utils;
 using PopupBlocker.ViewModels;
 using System.Windows;
 
@@ -11,7 +10,7 @@ namespace PopupBlocker
     public partial class MainWindow : Window
     {
         private readonly PopupInterceptorViewModel _viewModel;
-        private readonly LoggerService _logger = Singleton<LoggerService>.Instance;
+        private readonly LoggerService _logger = Utility.Commons.Singleton<LoggerService>.Instance;
 
         public MainWindow()
         {
