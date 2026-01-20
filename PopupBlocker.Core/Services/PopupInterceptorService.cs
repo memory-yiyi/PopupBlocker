@@ -1,11 +1,11 @@
-using PopupBlocker.Models;
+using PopupBlocker.Core.Models;
 using PopupBlocker.Utility.Commons;
 using PopupBlocker.Utility.Windows;
 using System.Diagnostics;
 
-namespace PopupBlocker.Services
+namespace PopupBlocker.Core.Services
 {
-    public class PopupInterceptorService : IDisposable
+    public class PopupInterceptorService : Utility.Interfaces.StatusManagerBase
     {
         #region 服务启动与停止逻辑
         private Thread? _monitorThread;
@@ -13,11 +13,12 @@ namespace PopupBlocker.Services
         private readonly LoggerService _logger = Singleton<LoggerService>.Instance;
         public PopupInterceptorService() { }
 
-        public void Start()
-        {
-            if (IsRunning)
-                return;
 
+        public override bool IsRunning => _cts is not null;
+        public override bool IsStopped => _cts is null;
+
+        protected override void OnStart()
+        {
             _cts = new CancellationTokenSource();
             _monitorThread = new Thread(MonitorWindows)
             {
@@ -29,20 +30,14 @@ namespace PopupBlocker.Services
             _logger.Info("拦截器已启动");
         }
 
-        public void Stop()
+        protected override void OnStop()
         {
-            if (IsStopped)
-                return;
-
             _cts!.Cancel();
             _monitorThread?.Join(1000);
             _cts.Dispose();
             _cts = null;
             _logger.Info("拦截器已停止");
         }
-
-        public bool IsRunning => _cts is not null;
-        public bool IsStopped => _cts is null;
         #endregion
 
         #region 监控逻辑
@@ -75,11 +70,11 @@ namespace PopupBlocker.Services
             WinAPI.EnumWindows(EnumWindowCallback, IntPtr.Zero);
         }
 
-        private bool EnumWindowCallback(IntPtr hWnd, IntPtr lParam)
+        private bool EnumWindowCallback(UIntPtr hWnd, IntPtr lParam)
         {
             try
             {
-                if (hWnd == IntPtr.Zero || !WinAPI.IsWindowVisible(hWnd))
+                if (hWnd == UIntPtr.Zero || !WinAPI.IsWindowVisible(hWnd))
                     return true;
 
                 // 获取窗口信息
@@ -123,12 +118,12 @@ namespace PopupBlocker.Services
             };
         }
 
-        private static void CloseWindowSafely(IntPtr hWnd)
+        private static void CloseWindowSafely(UIntPtr hWnd)
         {
             try
             {
                 // 首先尝试优雅关闭
-                WinAPI.PostMessage(hWnd, WinAPI.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                WinAPI.PostMessage(hWnd, WinAPI.WM_CLOSE, UIntPtr.Zero, IntPtr.Zero);
 
                 Thread.Sleep(50);
 
@@ -142,40 +137,6 @@ namespace PopupBlocker.Services
                 // 最后手段：隐藏窗口
                 WinAPI.ShowWindow(hWnd, WinAPI.SW_HIDE);
             }
-        }
-        #endregion
-
-        #region 释放模式
-        private bool disposedValue;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                    Stop();
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~PopupInterceptorService()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
         #endregion
     }

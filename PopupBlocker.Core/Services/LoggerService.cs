@@ -1,4 +1,4 @@
-namespace PopupBlocker.Services
+namespace PopupBlocker.Core.Services
 {
     public enum LogLevel
     {

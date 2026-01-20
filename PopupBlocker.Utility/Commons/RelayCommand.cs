@@ -1,13 +1,11 @@
-﻿using System.Windows.Input;
-
-namespace PopupBlocker.Utility.Commons
+﻿namespace PopupBlocker.Utility.Commons
 {
-    public class RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null) : ICommand
+    public class RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null) : System.Windows.Input.ICommand
     {
         public event EventHandler? CanExecuteChanged
         {
-            add => CommandManager.RequerySuggested += value;
-            remove => CommandManager.RequerySuggested -= value;
+            add => System.Windows.Input.CommandManager.RequerySuggested += value;
+            remove => System.Windows.Input.CommandManager.RequerySuggested -= value;
         }
 
         public bool CanExecute(object? parameter) => canExecute?.Invoke(parameter) ?? true;

@@ -1,10 +1,10 @@
-using PopupBlocker.Models;
+using PopupBlocker.Core.Models;
 using System.Collections;
 using System.IO;
 using System.Text.Json;
-using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Models.InterceptorRule>;
+using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Core.Models.InterceptorRule>;
 
-namespace PopupBlocker.Services
+namespace PopupBlocker.Core.Services
 {
     public class ConfigService : IEnumerable<InterceptorRule>
     {

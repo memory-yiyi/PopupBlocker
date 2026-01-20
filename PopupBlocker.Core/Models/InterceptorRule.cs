@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace PopupBlocker.Models
+namespace PopupBlocker.Core.Models
 {
     public enum RuleType
     {

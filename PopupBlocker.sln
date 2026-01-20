@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopupBlocker", "PopupBlocke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopupBlocker.Utility", "PopupBlocker.Utility\PopupBlocker.Utility.csproj", "{F75C7762-48A4-465F-A15A-347ED5A9DC66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopupBlocker.Core", "PopupBlocker.Core\PopupBlocker.Core.csproj", "{753797AD-B813-48C0-B4C5-9FC342F4A15D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F75C7762-48A4-465F-A15A-347ED5A9DC66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F75C7762-48A4-465F-A15A-347ED5A9DC66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F75C7762-48A4-465F-A15A-347ED5A9DC66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{753797AD-B813-48C0-B4C5-9FC342F4A15D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{753797AD-B813-48C0-B4C5-9FC342F4A15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{753797AD-B813-48C0-B4C5-9FC342F4A15D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{753797AD-B813-48C0-B4C5-9FC342F4A15D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

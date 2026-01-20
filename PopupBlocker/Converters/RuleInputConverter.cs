@@ -10,7 +10,7 @@ namespace PopupBlocker.Converters
             {
                 if (pattern == string.Empty)
                     return null;
-                return Tuple.Create(pattern, (Models.RuleType?)selectedIndex ?? Models.RuleType.WindowTitle);
+                return Tuple.Create(pattern, (Core.Models.RuleType?)selectedIndex ?? Core.Models.RuleType.WindowTitle);
             }
             return null;
         }

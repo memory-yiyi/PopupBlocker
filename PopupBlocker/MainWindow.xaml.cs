@@ -1,5 +1,5 @@
-using PopupBlocker.Services;
-using PopupBlocker.ViewModels;
+using PopupBlocker.Core.Services;
+using PopupBlocker.Core.ViewModels;
 using System.Windows;
 
 namespace PopupBlocker

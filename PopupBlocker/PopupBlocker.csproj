@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PopupBlocker.Utility\PopupBlocker.Utility.csproj" />
+    <ProjectReference Include="..\PopupBlocker.Core\PopupBlocker.Core.csproj" />
   </ItemGroup>
 
 </Project>

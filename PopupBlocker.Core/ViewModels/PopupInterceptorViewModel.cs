@@ -1,15 +1,15 @@
 using Microsoft.Win32;
-using PopupBlocker.Models;
-using PopupBlocker.Services;
+using PopupBlocker.Core.Models;
+using PopupBlocker.Core.Services;
 using PopupBlocker.Utility.Commons;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Models.InterceptorRule>;
+using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Core.Models.InterceptorRule>;
 
-namespace PopupBlocker.ViewModels
+namespace PopupBlocker.Core.ViewModels
 {
     public class PopupInterceptorViewModel : INotifyPropertyChanged, IDisposable
     {
