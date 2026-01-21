@@ -150,10 +150,11 @@ namespace PopupBlocker.Core.Services
             SaveRules();
         }
 
-        // 这是浅拷贝，所以你对新列表的修改也会影响原始列表
-        // 这是你能通过数据绑定直接影响原始列表的原因
-        // 也是此处对于规则方法能如此轻松实现的原因
-        // 如果使用深拷贝，你必须给每个规则方法加上搜索逻辑，以找到并更新原始列表中的规则
+        /* 这是浅拷贝，所以你对新列表的修改也会影响原始列表
+         * 这是你能通过数据绑定直接影响原始列表的原因
+         * 也是此处对于规则方法能如此轻松实现的原因
+         * 如果使用深拷贝，你必须给每个规则方法加上搜索逻辑，以找到并更新原始列表中的规则
+         */
         public InterceptorRuleList GetAllRules() => [.. _rules];
         public IEnumerator<InterceptorRule> GetEnumerator() => _rules.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -75,9 +75,10 @@ namespace PopupBlocker.Core.ViewModels
         public PopupInterceptorViewModel()
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
         {
-            // 初始化，_rulesView已赋值，请忽略关于其的CS8618警告
-            // 遇到奇怪的bug可以尝试注释预处理器指令
-            // 你问我为什么？因为ai会非常固执的修复这个警告，即使你确认这个警告是多余的
+            /* 初始化，_rulesView已赋值，请忽略关于其的CS8618警告
+             * 遇到奇怪的bug可以尝试注释预处理器指令
+             * 你问我为什么？因为ai会非常固执的修复这个警告，即使你确认这个警告是多余的
+             */
             RefreshRulesList(_config.GetAllRules());
             // 订阅事件
             _config.RulesChanged += RefreshRulesList;
