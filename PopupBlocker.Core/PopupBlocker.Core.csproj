@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.28" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PopupBlocker.Utility\PopupBlocker.Utility.csproj" />
   </ItemGroup>
 

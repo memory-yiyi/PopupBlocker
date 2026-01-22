@@ -29,7 +29,7 @@ namespace PopupBlocker
 
                 try
                 {
-                    Process.Start(processInfo);
+                    Process.Start(processInfo)?.Dispose();
                 }
                 catch (System.ComponentModel.Win32Exception)
                 {
