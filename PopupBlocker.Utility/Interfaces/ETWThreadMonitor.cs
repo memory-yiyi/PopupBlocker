@@ -2,12 +2,10 @@
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
 
-namespace PopupBlocker.Core.Services
+namespace PopupBlocker.Utility.Interfaces
 {
-    public sealed class ThreadMonitorService : Utility.Interfaces.StatusManagerBase
+    public abstract class ETWThreadMonitor : StatusManagerBase
     {
-        public ThreadMonitorService() { }
-
         #region StatusManagerBase
         public override bool IsRunning => _session is not null;
         public override bool IsStopped => _session is null;
@@ -52,10 +50,7 @@ namespace PopupBlocker.Core.Services
         private TraceEventSession? _session;
         private Thread? _processingThread;
 
-        private void OnThreadCreated(ThreadTraceData data)
-        {
-
-        }
+        protected abstract void OnThreadCreated(ThreadTraceData data);
         #endregion
     }
 }

@@ -1,16 +1,15 @@
 using PopupBlocker.Core.Models;
-using System.Collections;
 using System.IO;
 using System.Text.Json;
-using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Core.Models.InterceptorRule>;
+using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Core.Models.InterceptorRules>;
 
 namespace PopupBlocker.Core.Services
 {
-    public class ConfigService : IEnumerable<InterceptorRule>
+    public class ConfigService
     {
         #region 私有字段
         // 存储拦截规则的列表
-        private readonly InterceptorRuleList _rules = [];
+        private readonly InterceptorRuleList _ruleList = [];
         // 配置文件名称和路径
         private const string ConfigFileName = "popup_blocker_config.json";
         private readonly string _configFilePath;
@@ -34,7 +33,7 @@ namespace PopupBlocker.Core.Services
             Directory.CreateDirectory(appFolder);
             _configFilePath = Path.Combine(appFolder, ConfigFileName);
             // 加载配置文件中的拦截规则
-            LoadRules();
+            LoadRuleList();
         }
 
         /// <summary>
@@ -42,112 +41,72 @@ namespace PopupBlocker.Core.Services
         /// </summary>
         public event Action<InterceptorRuleList>? RulesChanged;
 
-        #region 规则集合的公共方法
-        public void LoadRules()
+        /// <summary>
+        /// 提供用于规则列表操作的封装——进程名称是否相等
+        /// </summary>
+        /// <param name="processName"></param>
+        /// <returns></returns>
+        private static Predicate<InterceptorRules> GetProcessNamePredicate(string processName) => r => r.ProcessName == processName;
+
+        #region 规则列表的公共方法
+        public void LoadRuleList(string? filePath = null)
         {
-            _rules.Clear();
+            var fp = filePath ?? _configFilePath;
+            _ruleList.Clear();
             try
             {
-                if (File.Exists(_configFilePath))
-                {
-                    using var jsonStream = File.OpenRead(_configFilePath);
-                    var rules = JsonSerializer.Deserialize<InterceptorRuleList>(jsonStream);
-                    if (rules is not null)
-                        _rules.AddRange(rules);
-                }
+                if (!File.Exists(fp))
+                    throw new FileNotFoundException($"配置文件不存在：{fp}");
+
+                using var jsonStream = File.OpenRead(fp);
+                var rules = JsonSerializer.Deserialize<InterceptorRuleList>(jsonStream) ?? throw new NullReferenceException($"无效的配置文件：{fp}");
+                _ruleList.AddRange(rules);
             }
             catch (Exception ex)
             {
-                _logger.Warning($"加载配置失败: {ex.Message}");
+                _logger.Warning($"加载配置失败：{ex.Message}");
                 return;
             }
-            _logger.Debug($"配置已成功加载");
+            _logger.Info($"配置已成功加载：{fp}");
         }
 
-        public void SaveRules()
+        public void SaveRuleList(string? filePath = null)
         {
+            var fp = filePath ?? _configFilePath;
             try
             {
-                using var jsonStream = File.OpenWrite(_configFilePath);
+                using var jsonStream = File.OpenWrite(fp);
                 jsonStream.SetLength(0);
-                JsonSerializer.Serialize(jsonStream, _rules, _jsonSerializerOptions);
+                JsonSerializer.Serialize(jsonStream, _ruleList, _jsonSerializerOptions);
             }
             catch (Exception ex)
             {
-                _logger.Warning($"保存配置失败: {ex.Message}");
+                _logger.Warning($"保存配置失败：{ex.Message}");
                 return;
             }
-            _logger.Debug($"配置已成功保存");
+            var info = $"配置已成功保存：{fp}";
+            if (filePath is null)
+                _logger.Debug(info);
+            else
+                _logger.Info(info);
             RulesChanged?.Invoke(GetAllRules());
         }
 
-        public void ExportRules(string filePath)
-        {
-            // 创建不包含计数和时间的新规则列表
-            var exportRules = _rules.Select(r => new InterceptorRule
-            {
-                Type = r.Type,
-                Pattern = r.Pattern,
-                Enabled = r.Enabled,
-                Description = r.Description,
-                BlockedCount = 0,  // 重置为0
-                LastBlockedTime = null  // 清除时间
-            }).ToList();
-            try
-            {
-                using var jsonStream = File.OpenWrite(filePath);
-                jsonStream.SetLength(0);
-                JsonSerializer.Serialize(jsonStream, exportRules, _jsonSerializerOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning($"导出配置失败: {ex.Message}");
-                return;
-            }
-            _logger.Info($"配置已成功导出到: {filePath}");
-        }
-
-        public void ImportRules(string filePath)
-        {
-            try
-            {
-                if (!File.Exists(filePath))
-                    throw new FileNotFoundException($"配置文件不存在: {filePath}");
-
-                using var jsonStream = File.OpenRead(filePath);
-                var rules = JsonSerializer.Deserialize<InterceptorRuleList>(jsonStream) ?? throw new Exception("配置文件中没有有效的规则");
-                foreach (var rule in rules)
-                    AddRule(rule, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warning($"导入配置失败: {ex.Message}");
-                return;
-            }
-            SaveRules();
-            _logger.Info($"配置已成功导入: {filePath}");
-        }
+        public bool ExistRules(string processName) => _ruleList.Exists(GetProcessNamePredicate(processName));
 
         public void ResetAllCounts()
         {
-            foreach (var rule in _rules)
-                rule.ResetBlockCount();
-            SaveRules();
+            _ruleList.ForEach(r => r.ResetBlockCount());
+            SaveRuleList();
             _logger.Info("所有拦截规则的计数已重置");
         }
 
-        public void SaveDefaultRules()
+        public void ResetRulesCount(InterceptorRules rules)
         {
-            _rules.Clear();
-            _rules.Add(new InterceptorRule(RuleType.WindowClass, "#32770", true, "标准对话框窗口"));
-            _rules.Add(new InterceptorRule(RuleType.WindowClass, "Popup", true, "弹出窗口"));
-            _rules.Add(new InterceptorRule(RuleType.WindowClass, "Tooltip", true, "工具提示窗口"));
-            _rules.Add(new InterceptorRule(RuleType.WindowTitle, "广告", true, "包含广告关键词的窗口"));
-            _rules.Add(new InterceptorRule(RuleType.WindowTitle, "推广", true, "包含推广关键词的窗口"));
-            _rules.Add(new InterceptorRule(RuleType.WindowTitle, "alert", true, "警告弹窗"));
-            _rules.Add(new InterceptorRule(RuleType.WindowTitle, "popup", true, "弹出窗口"));
-
-            SaveRules();
+            // 能重置就是存在规则，存在就可以直接指定规则，无需搜索
+            rules.ResetBlockCount();
+            SaveRuleList();
+            _logger.Info($"进程的拦截规则计数已重置：{rules.ProcessName}");
         }
 
         /* 这是浅拷贝，所以你对新列表的修改也会影响原始列表
@@ -155,85 +114,82 @@ namespace PopupBlocker.Core.Services
          * 也是此处对于规则方法能如此轻松实现的原因
          * 如果使用深拷贝，你必须给每个规则方法加上搜索逻辑，以找到并更新原始列表中的规则
          */
-        public InterceptorRuleList GetAllRules() => [.. _rules];
-        public IEnumerator<InterceptorRule> GetEnumerator() => _rules.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public InterceptorRuleList GetAllRules() => [.. _ruleList];
         #endregion
 
         #region 规则的公共方法
-        public void AddRule(InterceptorRule rule, bool isImport = false)
+        public void AddRule(string processName, InterceptorRule? rule = null)
         {
-            if (_rules.Exists(r => r.Type == rule.Type && r.Pattern == rule.Pattern))
+            // 添加无法确定规则是否存在，不确定就不能指定规则，需要搜索
+            var rules = _ruleList.Find(GetProcessNamePredicate(processName));
+            if (rule is null)
             {
-                _logger.Warning($"规则已存在: {rule}");
-                return;
+                if (rules is null)
+                {
+                    var newRules = new InterceptorRules(processName);
+                    _ruleList.Add(newRules);
+                    SaveRuleList();
+                    _logger.Info($"规则已成功添加：{newRules}");
+                }
+                else
+                    _logger.Warning($"规则已存在：{rules}");
             }
-            _rules.Add(rule);
-            if (isImport)
-                return;
-            SaveRules();
-            _logger.Info($"规则已成功添加: {rule}");
+            else
+            {
+                if (rules is null)
+                {
+                    var newRules = new InterceptorRules(processName, [rule]);
+                    _ruleList.Add(newRules);
+                    SaveRuleList();
+                    _logger.Info($"规则已成功添加：{newRules.ProcessName} - {rule}");
+                }
+                else if (rules.AddRule(rule))
+                    _logger.Info($"规则已成功添加：{rules.ProcessName} - {rule}");
+                else
+                    _logger.Warning($"规则已存在：{rules.ProcessName} - {rule}");
+            }
         }
 
-        public void RemoveRule(InterceptorRule rule)
+        public void RemoveRule(InterceptorRules rules, InterceptorRule? rule = null)
         {
-            _rules.Remove(rule);
-            SaveRules();
-            _logger.Info($"规则已成功删除: {rule}");
+            if (rule is null)
+                _ruleList.Remove(rules);
+            else
+                rules.RemoveRule(rule);
+            SaveRuleList();
+            _logger.Info($"规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
         }
 
-        public void UpdateRule(InterceptorRule oldRule, InterceptorRule newRule)
+        public bool MatchRule(string processName, string pattern)
         {
-            oldRule.Copy(newRule);
-            SaveRules();
+            var rules = _ruleList.Find(GetProcessNamePredicate(processName));
+            if (rules is null || !rules.IsActive)
+                return false;
+            if (rules.IsProcessName)
+                return true;
+            return rules.MatchRule(pattern);
         }
 
-        public void UpdateRule(InterceptorRule rule, RuleType type, string pattern, bool enabled = true, string? description = null)
+        public void ChangeRuleActivityStatus(Utility.Interfaces.IPopupInfo rule)
         {
-            rule.Update(type, pattern, enabled, description);
-            SaveRules();
+            rule.ChangeActivityStatus();
+            SaveRuleList();
         }
 
-        public void UpdateRuleType(InterceptorRule rule, RuleType type)
+        [Obsolete("请使用ResetRulesCount()方法")]
+        public void ResetRuleCount(Utility.Interfaces.IPopupCount rule)
         {
-            rule.UpdateType(type);
-            SaveRules();
-        }
-
-        public void UpdateRulePattern(InterceptorRule rule, string pattern)
-        {
-            rule.UpdatePattern(pattern);
-            SaveRules();
-        }
-
-        public void UpdateRuleEnabled(InterceptorRule rule, bool enabled)
-        {
-            rule.UpdateEnabled(enabled);
-            SaveRules();
-        }
-
-        public void UpdateRuleDescription(InterceptorRule rule, string? description)
-        {
-            rule.UpdateDescription(description);
-            SaveRules();
-        }
-
-        public void ToggleRule(InterceptorRule rule)
-        {
-            rule.ToggleEnabled();
-            SaveRules();
-        }
-
-        public void ResetRuleCount(InterceptorRule rule)
-        {
+            // ??? 你没事吧？仔细用你的小脑瓜子想一下，这有用吗？
             rule.ResetBlockCount();
-            SaveRules();
+            SaveRuleList();
+            throw new InvalidOperationException("哦？你是不是m？因为你漏了一个s，这个s正在用异常敲打你");
+            // 你不会以为我写了就能用吧？（doge
         }
 
-        public void IncrementRuleCount(InterceptorRule rule)
+        public void AddRuleCount(Utility.Interfaces.IPopupCount rule)
         {
-            rule.IncrementBlockCount();
-            SaveRules();
+            rule.AddBlockCount();
+            SaveRuleList();
         }
         #endregion
     }
