@@ -6,10 +6,30 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\PopupBlocker.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\PopupBlocker.kra" />
+  </ItemGroup>
+
+  <!-- Content说ico是未编译，但这个ico已经使用Resource进行编译 -->
+  <!-- 如果再次声明就会报错，请务必确保没有下面的条目 -->
+  <!--<ItemGroup>
+    <Content Include="Assets\PopupBlocker.ico" />
+  </ItemGroup>-->
+
+  <ItemGroup>
     <ProjectReference Include="..\PopupBlocker.Core\PopupBlocker.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.2.0" />
+    <PackageReference Include="WPF-UI.Tray" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\PopupBlocker.ico" />
   </ItemGroup>
 
 </Project>
