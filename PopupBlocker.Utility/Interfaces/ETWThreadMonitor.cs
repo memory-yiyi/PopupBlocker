@@ -4,13 +4,10 @@ using Microsoft.Diagnostics.Tracing.Session;
 
 namespace PopupBlocker.Utility.Interfaces
 {
-    public abstract class ETWThreadMonitor : StatusManagerBase
+    public abstract class ETWThreadMonitor : StatusManager
     {
-        #region StatusManagerBase
-        public override bool IsRunning => _session is not null;
-        public override bool IsStopped => _session is null;
-
-        protected override void OnStart()
+        #region StatusManager
+        protected override void OnInit()
         {
             // 创建ETW会话
             _session = new TraceEventSession("ThreadMonitorSession", null)
@@ -28,11 +25,13 @@ namespace PopupBlocker.Utility.Interfaces
                 Priority = ThreadPriority.BelowNormal,
                 Name = "ThreadMonitorService"
             };
-            // 启动ETW会话
-            _processingThread.Start();
         }
 
-        protected override void OnStop()
+        protected override void OnStart() => _processingThread!.Start();
+        protected override void OnPause() => _session!.Source.Kernel.ThreadStart -= OnThreadCreated;
+        protected override void OnContinue() => _session!.Source.Kernel.ThreadStart += OnThreadCreated;
+
+        protected override void OnEnd()
         {
             _session!.Dispose(); // 得益于StopOnDispose为true，所以Dispose时会调用Stop方法，从而停止会话并释放资源
             _processingThread!.Join(1000);

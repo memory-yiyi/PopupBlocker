@@ -46,6 +46,7 @@ namespace PopupBlocker.Core.Services
             WinAPI.EnumWindows(EnumWindowCallback, IntPtr.Zero);
         }
 
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
         private bool EnumWindowCallback(UIntPtr hWnd, IntPtr lParam)
         {
             try
