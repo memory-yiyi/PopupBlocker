@@ -5,14 +5,11 @@ using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Core.Mo
 
 namespace PopupBlocker.Core.Services
 {
-    public class ConfigService
+    public class RuleConfigService
     {
         #region 私有字段
         // 存储拦截规则的列表
         private readonly InterceptorRuleList _ruleList = [];
-        // 配置文件名称和路径
-        private const string ConfigFileName = "popup_blocker_config.json";
-        private readonly string _configFilePath;
         // JSON 序列化选项，用于美化输出和驼峰命名
         private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
@@ -24,15 +21,8 @@ namespace PopupBlocker.Core.Services
         private readonly LoggerService _logger = Utility.Commons.Singleton<LoggerService>.Instance;
         #endregion
 
-        public ConfigService()
+        public RuleConfigService()
         {
-            // 创建C:\Users\User\AppData\Roaming\PopupBlocker文件夹，如果不存在的话
-            // 并且初始化配置文件路径
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var appFolder = Path.Combine(appDataPath, "PopupBlocker");
-            Directory.CreateDirectory(appFolder);
-            _configFilePath = Path.Combine(appFolder, ConfigFileName);
-            // 加载配置文件中的拦截规则
             LoadRuleList();
         }
 
@@ -41,17 +31,10 @@ namespace PopupBlocker.Core.Services
         /// </summary>
         public event Action<InterceptorRuleList>? RulesChanged;
 
-        /// <summary>
-        /// 提供用于规则列表操作的封装——进程名称是否相等
-        /// </summary>
-        /// <param name="processName"></param>
-        /// <returns></returns>
-        private static Predicate<InterceptorRules> GetProcessNamePredicate(string processName) => r => r.ProcessName == processName;
-
         #region 规则列表的公共方法
         public void LoadRuleList(string? filePath = null)
         {
-            var fp = filePath ?? _configFilePath;
+            var fp = filePath ?? AppPath.RuleConfigFilePath;
             _ruleList.Clear();
             try
             {
@@ -72,7 +55,7 @@ namespace PopupBlocker.Core.Services
 
         public void SaveRuleList(string? filePath = null)
         {
-            var fp = filePath ?? _configFilePath;
+            var fp = filePath ?? AppPath.RuleConfigFilePath;
             try
             {
                 using var jsonStream = File.OpenWrite(fp);
@@ -92,7 +75,7 @@ namespace PopupBlocker.Core.Services
             RulesChanged?.Invoke(GetAllRules());
         }
 
-        public bool ExistRules(string processName) => _ruleList.Exists(GetProcessNamePredicate(processName));
+        public InterceptorRules? FindRules(string processName) => _ruleList.Find(r => r.ProcessName == processName);
 
         public void ResetAllCounts()
         {
@@ -121,7 +104,7 @@ namespace PopupBlocker.Core.Services
         public void AddRule(string processName, InterceptorRule? rule = null)
         {
             // 添加无法确定规则是否存在，不确定就不能指定规则，需要搜索
-            var rules = _ruleList.Find(GetProcessNamePredicate(processName));
+            var rules = FindRules(processName);
             if (rule is null)
             {
                 if (rules is null)
@@ -149,6 +132,7 @@ namespace PopupBlocker.Core.Services
                     _logger.Warning($"规则已存在：{rules.ProcessName} - {rule}");
             }
         }
+        public void AddRule(string processName, string className, string windowTitle, bool isWindowClass = true) => AddRule(processName, new InterceptorRule(className, windowTitle, isWindowClass));
 
         public void RemoveRule(InterceptorRules rules, InterceptorRule? rule = null)
         {
@@ -160,15 +144,15 @@ namespace PopupBlocker.Core.Services
             _logger.Info($"规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
         }
 
-        public bool MatchRule(string processName, string pattern)
+        public static bool MatchRule(InterceptorRules? rules, string className, string windowTitle)
         {
-            var rules = _ruleList.Find(GetProcessNamePredicate(processName));
             if (rules is null || !rules.IsActive)
                 return false;
             if (rules.IsProcessName)
                 return true;
-            return rules.MatchRule(pattern);
+            return rules.MatchRule(className, windowTitle);
         }
+        public bool MatchRule(string processName, string className, string windowTitle) => MatchRule(FindRules(processName), className, windowTitle);
 
         public void ChangeRuleActivityStatus(Utility.Interfaces.IPopupInfo rule)
         {

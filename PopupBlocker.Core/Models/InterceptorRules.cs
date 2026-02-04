@@ -2,7 +2,7 @@
 
 namespace PopupBlocker.Core.Models
 {
-    public sealed class InterceptorRules(string processName, List<InterceptorRule>? rules, bool isActive = true) : Utility.Interfaces.IPopupInfo
+    public sealed class InterceptorRules : Utility.Interfaces.IPopupInfo
     {
         #region 属性
         /// <summary>
@@ -14,15 +14,22 @@ namespace PopupBlocker.Core.Models
         /// 进程名称
         /// </summary>
         [JsonPropertyName("processName")]
-        public string ProcessName { get; init; } = processName;
+        public string ProcessName { get; init; }
         /// <summary>
         /// 拦截规则
         /// </summary>
         [JsonPropertyName("rules")]
-        public List<InterceptorRule>? Rules { get; init; } = rules;
+        public List<InterceptorRule>? Rules { get; init; }
         #endregion
 
         #region 构造函数
+        [JsonConstructor]
+        public InterceptorRules(string processName, List<InterceptorRule>? rules, bool isActive = true)
+        {
+            ProcessName = processName;
+            Rules = rules;
+            IsActive = isActive;
+        }
         public InterceptorRules(string processName, bool isActive = true) : this(processName, null, isActive) { }
         #endregion
 
@@ -58,15 +65,15 @@ namespace PopupBlocker.Core.Models
         /// <param name="rule"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public bool MatchRule(string pattern)
+        public bool MatchRule(string className, string windowTitle)
         {
             if (IsProcessName)
                 throw new InvalidOperationException("按进程名称拦截时，不能匹配规则");
-            /* 为什么不用Exists(r => r.Pattern == pattern && r.IsActive)？
+            /* 为什么不用Exists(r => r.Pattern == (r.IsWindowClass ? className : windowTitle) && r.IsActive)？
              * 因为Find找到就会停下，而上面的在规则被禁用时，即使找到规则也会遍历所有规则
              * Find可以减少不必要的遍历，提高效率
              */
-            var rule = Rules!.Find(r => r.Pattern == pattern);
+            var rule = Rules!.Find(r => r.Pattern == (r.IsWindowClass ? className : windowTitle));
             if (rule is null)
                 return false;
             return rule.IsActive;
@@ -85,7 +92,7 @@ namespace PopupBlocker.Core.Models
         /// 是否启用
         /// </summary>
         [JsonPropertyName("isActive")]
-        public bool IsActive { get; set; } = isActive;
+        public bool IsActive { get; set; }
         /// <summary>
         /// 匹配字符串
         /// </summary>

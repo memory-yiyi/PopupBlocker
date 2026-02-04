@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace PopupBlocker.Core
+namespace PopupBlocker.Views
 {
     public class TestPopupWindow : Window
     {

@@ -1,0 +1,95 @@
+﻿using PopupBlocker.Controls;
+using PopupBlocker.Utility.Commons;
+using System.Windows;
+using System.Windows.Input;
+
+namespace PopupBlocker.ViewModels
+{
+    public class SelectorViewModel : ViewModelBase
+    {
+        private readonly Core.Services.RuleConfigService _ruleList = Singleton<Core.Services.RuleConfigService>.Instance;
+        public SelectorViewModel()
+        {
+            ConfirmToolVisibility = Visibility.Hidden;
+        }
+
+        private nuint _handle;
+
+        private Visibility _confirmToolVisibility;
+        public Visibility ConfirmToolVisibility
+        {
+            get => _confirmToolVisibility;
+            set
+            {
+                _confirmToolVisibility = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private string _processName = string.Empty;
+        public string ProcessName
+        {
+            get => _processName;
+            set
+            {
+                _processName = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public ICommand ClickCommand => new RelayCommand(obj =>
+        {
+            if (ConfirmToolVisibility != Visibility.Hidden)
+                return;
+            if (obj is SelectorWindow selector)
+            {
+                ConfirmToolVisibility = Visibility.Visible;
+                _handle = selector.GetWindowHandleFromMouse();
+                ProcessName = WindowInfo.GetWindowThreadProcessName(_handle);
+            }
+        });
+
+        public ICommand ConfirmProcessCommand => new RelayCommand(obj =>
+        {
+            if (obj is SelectorWindow selector)
+            {
+                _ruleList.AddRule(ProcessName);
+                selector.Close();
+            }
+        });
+
+        public ICommand ConfirmWindowCommand => new RelayCommand(obj =>
+        {
+            if (obj is SelectorWindow selector)
+            {
+                _ruleList.AddRule(ProcessName, WindowInfo.GetWindowClass(_handle), WindowInfo.GetWindowTitle(_handle));
+                selector.Close();
+            }
+        });
+
+        public ICommand CancelCommand => new RelayCommand(obj =>
+        {
+            if (obj is SelectorWindow selector)
+            {
+                selector.Close();
+            }
+        });
+
+        public ICommand EscapeCommand => new RelayCommand(obj =>
+        {
+            if (obj is SelectorWindow selector)
+            {
+                switch (ConfirmToolVisibility)
+                {
+                    case Visibility.Visible:
+                        selector.StartMouseFollow();
+                        ConfirmToolVisibility = Visibility.Hidden;
+                        break;
+                    case Visibility.Hidden:
+                        selector.Close();
+                        break;
+                }
+            }
+        });
+    }
+}

@@ -16,6 +16,12 @@ namespace PopupBlocker.Utility.Windows
 
         #region 方法
         [DllImport("user32.dll")]
+        public static extern UIntPtr FindWindow(string? className, string? windowTitle);
+
+        [DllImport("user32.dll")]
+        public static extern UIntPtr FindWindowEx(UIntPtr parentHandle, UIntPtr childAfter, string? className, string? windowTitle);
+
+        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
 
@@ -23,7 +29,7 @@ namespace PopupBlocker.Utility.Windows
         public static extern uint GetWindowThreadProcessId(UIntPtr hWnd, out uint processId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern int GetWindowText(UIntPtr hWnd, System.Text.StringBuilder windowText, int maxCount);
+        public static extern int GetWindowText(UIntPtr hWnd, System.Text.StringBuilder windowTitle, int maxCount);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int GetClassName(UIntPtr hWnd, System.Text.StringBuilder className, int maxCount);

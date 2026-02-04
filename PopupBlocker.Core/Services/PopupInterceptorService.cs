@@ -1,6 +1,5 @@
 using PopupBlocker.Utility.Commons;
 using PopupBlocker.Utility.Windows;
-using System.Diagnostics;
 
 namespace PopupBlocker.Core.Services
 {
@@ -25,24 +24,18 @@ namespace PopupBlocker.Core.Services
 
         #region 监控逻辑
         [ThreadStatic]
-        private static System.Text.StringBuilder? _titleBuilder;
-        [ThreadStatic]
-        private static System.Text.StringBuilder? _classBuilder;
-        [ThreadStatic]
-        private static string? _processName;
-        private readonly ConfigService _config = Singleton<ConfigService>.Instance;
+        private static Models.InterceptorRules? _rules;
+        private readonly RuleConfigService _config = Singleton<RuleConfigService>.Instance;
 
         protected override void OnThreadCreated(Microsoft.Diagnostics.Tracing.Parsers.Kernel.ThreadTraceData data)
         {
-            if (_config.ExistRules(data.ProcessName))
-                Task.Run(() => CheckAndBlockWindows(data.ProcessName));
+            _rules = _config.FindRules(data.ProcessName);
+            if (_rules is not null)
+                Task.Run(CheckAndBlockWindows);
         }
 
-        private void CheckAndBlockWindows(string processName)
+        private void CheckAndBlockWindows()
         {
-            _titleBuilder = new System.Text.StringBuilder(256);
-            _classBuilder = new System.Text.StringBuilder(256);
-            _processName = processName;
             WinAPI.EnumWindows(EnumWindowCallback, IntPtr.Zero);
         }
 
@@ -54,22 +47,17 @@ namespace PopupBlocker.Core.Services
                 if (hWnd == UIntPtr.Zero || !WinAPI.IsWindowVisible(hWnd))
                     return true;
 
-                _ = WinAPI.GetWindowThreadProcessId(hWnd, out var processId);
-                using var process = Process.GetProcessById((int)processId);
-                var processName = process.ProcessName;
+                var processName = WindowInfo.GetWindowThreadProcessName(hWnd);
 
-                if (processName != _processName)
+                if (processName != _rules!.ProcessName)
                     return true;
 
-                _ = WinAPI.GetClassName(hWnd, _classBuilder!, _classBuilder!.Capacity);
-                var className = _classBuilder.ToString();
+                var className = WindowInfo.GetWindowClass(hWnd);
+                var windowTitle = WindowInfo.GetWindowTitle(hWnd);
 
-                _ = WinAPI.GetWindowText(hWnd, _titleBuilder!, _titleBuilder!.Capacity);
-                var title = _titleBuilder.ToString();
+                _logger.Debug($"检查窗口：{processName} - {className} - {windowTitle}");
 
-                _logger.Debug($"检查窗口：{processName} - {className} - {title}");
-
-                if (!_config.MatchRule(processName, className))
+                if (!RuleConfigService.MatchRule(_rules, className, windowTitle))
                     return true;
 
                 CloseWindowSafely(hWnd);

@@ -2,14 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace PopupBlocker.Core.Models
 {
-    public sealed class InterceptorRule(string windowClass, bool isWindowClass, string windowTitle, bool isActive = true) : Utility.Interfaces.IPopupInfo
+    public sealed class InterceptorRule : Utility.Interfaces.IPopupInfo
     {
         #region 属性
         /// <summary>
         /// 规则类型是否为窗口类名
         /// </summary>
         [JsonPropertyName("isWindowClass")]
-        public bool IsWindowClass { get; set; } = isWindowClass;
+        public bool IsWindowClass { get; set; }
         /// <summary>
         /// 规则类型是否为窗口标题
         /// </summary>
@@ -19,15 +19,23 @@ namespace PopupBlocker.Core.Models
         /// 窗口类名
         /// </summary>
         [JsonPropertyName("windowClass")]
-        public string WindowClass { get; init; } = windowClass;
+        public string WindowClass { get; init; }
         /// <summary>
         /// 窗口标题
         /// </summary>
         [JsonPropertyName("windowTitle")]
-        public string WindowTitle { get; init; } = windowTitle;
+        public string WindowTitle { get; init; }
         #endregion
 
         #region 构造函数
+        [JsonConstructor]
+        public InterceptorRule(string windowClass, bool isWindowClass, string windowTitle, bool isActive = true)
+        {
+            IsWindowClass = isWindowClass;
+            WindowClass = windowClass;
+            WindowTitle = windowTitle;
+            IsActive = isActive;
+        }
         public InterceptorRule(string windowClass, bool isActive = true) : this(windowClass, true, string.Empty, isActive) { }
         public InterceptorRule(string windowClass, string windowTitle, bool isWindowClass = true, bool isActive = true) : this(windowClass, isWindowClass, windowTitle, isActive) { }
         #endregion
@@ -47,7 +55,7 @@ namespace PopupBlocker.Core.Models
         /// 是否启用
         /// </summary>
         [JsonPropertyName("isActive")]
-        public bool IsActive { get; set; } = isActive;
+        public bool IsActive { get; set; }
         /// <summary>
         /// 匹配字符串
         /// </summary>
