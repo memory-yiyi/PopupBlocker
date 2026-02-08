@@ -3,12 +3,53 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:PopupBlocker.Views.Pages"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:vm="clr-namespace:PopupBlocker.ViewModels"
+      xmlns:controls="clr-namespace:PopupBlocker.Controls"
       mc:Ignorable="d" 
+      d:DataContext="{d:DesignInstance vm:PopupInterceptorViewModel}"
       d:DesignHeight="450" d:DesignWidth="800"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       Title="InterceptorRulePage">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ui:CardControl Grid.Row="0">
+            <ui:CardControl.Icon>
+                <ui:SymbolIcon Symbol="ShieldCheckmark16"/>
+            </ui:CardControl.Icon>
+            <ui:CardControl.Header>
+                <ui:TextBlock Text="{Binding BlockedCount,StringFormat=共拦截 {0} 条弹窗}"/>
+            </ui:CardControl.Header>
+            <ui:ToggleSwitch/>
+        </ui:CardControl>
         
+        <controls:InterceptorRulesCard Grid.Row="1"
+            ItemsSource="{Binding RuleList}"
+            SaveRuleCommand="{Binding SaveRuleCommand}"
+            ResetCountCommand="{Binding ResetCountCommand}"
+            RemoveRuleCommand="{Binding RemoveRuleCommand}"/>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <WrapPanel Grid.Column="1" Margin="10">
+                <ui:HyperlinkButton Content="重置计数" Command="{Binding ResetAllCountCommand}"/>
+                <ui:HyperlinkButton Content="导入规则" Command="{Binding ImportRulesCommand}"/>
+                <ui:HyperlinkButton Content="导出规则" Command="{Binding ExportRulesCommand}"/>
+                <ui:HyperlinkButton Content="窗口拦截" Command="{Binding WindowSelectCommand}">
+                </ui:HyperlinkButton>
+            </WrapPanel>
+        </Grid>
     </Grid>
 </Page>

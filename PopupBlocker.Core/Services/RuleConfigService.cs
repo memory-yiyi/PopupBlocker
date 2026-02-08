@@ -29,7 +29,8 @@ namespace PopupBlocker.Core.Services
         /// <summary>
         /// 规则变化通知事件，当规则发生变化时触发此事件。
         /// </summary>
-        public event Action<InterceptorRuleList>? RulesChanged;
+        public event Action<IEnumerable<InterceptorRules>>? RulesChanged;
+        public long BlockedCount => _ruleList.Sum(r => r.BlockedCount);
 
         #region 规则列表的公共方法
         public void LoadRuleList(string? filePath = null)
@@ -39,21 +40,24 @@ namespace PopupBlocker.Core.Services
             try
             {
                 if (!File.Exists(fp))
-                    throw new FileNotFoundException($"配置文件不存在：{fp}");
+                    throw new FileNotFoundException($"拦截规则文件不存在：{fp}");
 
                 using var jsonStream = File.OpenRead(fp);
-                var rules = JsonSerializer.Deserialize<InterceptorRuleList>(jsonStream) ?? throw new NullReferenceException($"无效的配置文件：{fp}");
+                var rules = JsonSerializer.Deserialize<InterceptorRuleList>(jsonStream) ?? throw new NullReferenceException($"无效的拦截规则文件：{fp}");
                 _ruleList.AddRange(rules);
+
+                if (filePath is not null)
+                    SaveRuleList();
             }
             catch (Exception ex)
             {
-                _logger.Warning($"加载配置失败：{ex.Message}");
+                _logger.Warning($"加载拦截规则失败：{ex.Message}");
                 return;
             }
-            _logger.Info($"配置已成功加载：{fp}");
+            _logger.Info($"拦截规则已成功加载：{fp}");
         }
 
-        public void SaveRuleList(string? filePath = null)
+        public void SaveRuleList(string? filePath = null, bool isNotifyUI = true)
         {
             var fp = filePath ?? AppPath.RuleConfigFilePath;
             try
@@ -64,15 +68,16 @@ namespace PopupBlocker.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning($"保存配置失败：{ex.Message}");
+                _logger.Warning($"保存拦截规则失败：{ex.Message}");
                 return;
             }
-            var info = $"配置已成功保存：{fp}";
+            var info = $"拦截规则已成功保存：{fp}";
             if (filePath is null)
                 _logger.Debug(info);
             else
                 _logger.Info(info);
-            RulesChanged?.Invoke(GetAllRules());
+            if (isNotifyUI)
+                RulesChanged?.Invoke(GetAllRules());
         }
 
         public InterceptorRules? FindRules(string processName) => _ruleList.Find(r => r.ProcessName == processName);
@@ -112,10 +117,10 @@ namespace PopupBlocker.Core.Services
                     var newRules = new InterceptorRules(processName);
                     _ruleList.Add(newRules);
                     SaveRuleList();
-                    _logger.Info($"规则已成功添加：{newRules}");
+                    _logger.Info($"拦截规则已成功添加：{newRules}");
                 }
                 else
-                    _logger.Warning($"规则已存在：{rules}");
+                    _logger.Warning($"拦截规则已存在：{rules}");
             }
             else
             {
@@ -124,12 +129,12 @@ namespace PopupBlocker.Core.Services
                     var newRules = new InterceptorRules(processName, [rule]);
                     _ruleList.Add(newRules);
                     SaveRuleList();
-                    _logger.Info($"规则已成功添加：{newRules.ProcessName} - {rule}");
+                    _logger.Info($"拦截规则已成功添加：{newRules.ProcessName} - {rule}");
                 }
                 else if (rules.AddRule(rule))
-                    _logger.Info($"规则已成功添加：{rules.ProcessName} - {rule}");
+                    _logger.Info($"拦截规则已成功添加：{rules.ProcessName} - {rule}");
                 else
-                    _logger.Warning($"规则已存在：{rules.ProcessName} - {rule}");
+                    _logger.Warning($"拦截规则已存在：{rules.ProcessName} - {rule}");
             }
         }
         public void AddRule(string processName, string className, string windowTitle, bool isWindowClass = true) => AddRule(processName, new InterceptorRule(className, windowTitle, isWindowClass));
@@ -139,9 +144,13 @@ namespace PopupBlocker.Core.Services
             if (rule is null)
                 _ruleList.Remove(rules);
             else
+            {
                 rules.RemoveRule(rule);
+                if (rules.Rules!.Count == 0)
+                    _ruleList.Remove(rules);
+            }
             SaveRuleList();
-            _logger.Info($"规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
+            _logger.Info($"拦截规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
         }
 
         public static bool MatchRule(InterceptorRules? rules, string className, string windowTitle)

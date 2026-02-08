@@ -1,4 +1,7 @@
-﻿namespace PopupBlocker.Views
+﻿using PopupBlocker.Utility.Commons;
+using PopupBlocker.ViewModels;
+
+namespace PopupBlocker.Views
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
@@ -9,6 +12,13 @@
         {
             // 如果是图标异常，请务必按照项目文件(PopupBlocker.csproj)中的注释进行操作
             InitializeComponent();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            // 对于有IDisposable的ViewModel，使用单例模式，并在窗口关闭时释放资源
+            Singleton<PopupInterceptorViewModel>.Instance.Dispose();
+            base.OnClosed(e);
         }
 
         #region 窗口事件
