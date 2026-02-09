@@ -30,7 +30,7 @@
                         <ui:SymbolIcon Symbol="ChannelSubtract24"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="拦截日志"
+                <ui:NavigationViewItem Content="拦截日志" NavigationCacheMode="Enabled"
                     TargetPageType="{x:Type pages:LogPage}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="DocumentTextClock24"/>

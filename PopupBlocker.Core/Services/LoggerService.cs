@@ -13,8 +13,14 @@ namespace PopupBlocker.Core.Services
         public LoggerService() { }
         public event Action<string>? LogWritingEvent;
 
+        private bool _isActive;
+        public bool IsActive { get => _isActive; set => _isActive = value; }
+
         private void LogWriting(LogLevel level, string message)
         {
+            if (!IsActive)
+                return;
+
             // 目前日志仅需通过事件触发，不直接写入文件或控制台
             // 后续可根据需要扩展日志的输出方式，例如写入文件或控制台等
             LogWritingEvent?.Invoke($"[{DateTime.Now:HH:mm:ss}] [{level}] {message}\n");

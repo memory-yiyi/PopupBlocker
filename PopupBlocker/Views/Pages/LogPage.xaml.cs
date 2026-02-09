@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-namespace PopupBlocker.Views.Pages
+﻿namespace PopupBlocker.Views.Pages
 {
     /// <summary>
     /// LogPage.xaml 的交互逻辑
     /// </summary>
-    public partial class LogPage : Page
+    public partial class LogPage : System.Windows.Controls.Page
     {
+        private readonly Core.Services.LoggerService _logger = Utility.Commons.Singleton<Core.Services.LoggerService>.Instance;
+
         public LogPage()
         {
             InitializeComponent();
+            this.DataContext = Utility.Commons.Singleton<ViewModels.SettingViewModel>.Instance;
+            // 订阅事件，并确保UI线程安全
+            _logger.LogWritingEvent += (text) => Dispatcher.Invoke(() => tbLog.AppendText(text));
+        }
+
+        private void Page_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // 取消订阅事件，防止内存泄露
+            _logger.LogWritingEvent -= (text) => Dispatcher.Invoke(() => tbLog.AppendText(text));
         }
     }
 }
