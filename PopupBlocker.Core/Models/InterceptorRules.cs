@@ -65,18 +65,15 @@ namespace PopupBlocker.Core.Models
         /// <param name="rule"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public bool MatchRule(string className, string windowTitle)
+        public Utility.Interfaces.IPopupCount? FindRule(string className, string windowTitle)
         {
             if (IsProcessName)
                 throw new InvalidOperationException("按进程名称拦截时，不能匹配规则");
-            /* 为什么不用Exists(r => r.Pattern == (r.IsWindowClass ? className : windowTitle) && r.IsActive)？
-             * 因为Find找到就会停下，而上面的在规则被禁用时，即使找到规则也会遍历所有规则
-             * Find可以减少不必要的遍历，提高效率
-             */
+
             var rule = Rules!.Find(r => r.Pattern == (r.IsWindowClass ? className : windowTitle));
-            if (rule is null)
-                return false;
-            return rule.IsActive;
+            if (rule is null || !rule.IsActive)
+                return null;
+            return rule;
         }
         /// <summary>
         /// 转换为字符串

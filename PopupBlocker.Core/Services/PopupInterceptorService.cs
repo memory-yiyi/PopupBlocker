@@ -25,18 +25,23 @@ namespace PopupBlocker.Core.Services
         #region 监控逻辑
         [ThreadStatic]
         private static Models.InterceptorRules? _rules;
+        private readonly object _monitorLock = new();
         private readonly RuleConfigService _config = Singleton<RuleConfigService>.Instance;
 
         protected override void OnThreadCreated(Microsoft.Diagnostics.Tracing.Parsers.Kernel.ThreadTraceData data)
         {
-            _rules = _config.FindRules(data.ProcessName);
-            if (_rules is not null)
-                Task.Run(CheckAndBlockWindows);
+            var rules = _config.FindRules(data.ProcessName);
+            if (rules is not null)
+                Task.Run(() => CheckAndBlockWindows(rules));
         }
 
-        private void CheckAndBlockWindows()
+        private void CheckAndBlockWindows(Models.InterceptorRules rules)
         {
-            WinAPI.EnumWindows(EnumWindowCallback, IntPtr.Zero);
+            _rules = rules;
+            lock (_monitorLock)
+            {
+                WinAPI.EnumWindows(EnumWindowCallback, IntPtr.Zero);
+            }
         }
 
         [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
@@ -56,11 +61,13 @@ namespace PopupBlocker.Core.Services
                 var windowTitle = WindowInfo.GetWindowTitle(hWnd);
 
                 _logger.Debug($"检查窗口：{processName} - {className} - {windowTitle}");
-
-                if (!RuleConfigService.MatchRule(_rules, className, windowTitle))
+                var rule = RuleConfigService.FindRule(_rules, className, windowTitle);
+                if (rule is null)
                     return true;
+                _logger.Info($"拦截窗口：{processName} - {className} - {windowTitle}");
 
                 CloseWindowSafely(hWnd);
+                _config.AddRuleCount(rule);
             }
             catch (Exception ex)
             {

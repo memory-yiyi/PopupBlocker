@@ -28,7 +28,7 @@
             <ui:CardControl.Header>
                 <ui:TextBlock Text="{Binding BlockedCount,StringFormat=共拦截 {0} 条弹窗}"/>
             </ui:CardControl.Header>
-            <ui:ToggleSwitch/>
+            <ui:ToggleSwitch IsChecked="{Binding IsEnableInterceptor}" Command="{Binding ChangeInterceptorStatusCommand}"/>
         </ui:CardControl>
         
         <controls:InterceptorRulesCard Grid.Row="1"

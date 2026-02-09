@@ -72,7 +72,7 @@ namespace PopupBlocker.Controls
         {
             while (_isActive)
             {
-                _ = GetCursorPos(out _lastPoint.WinPoint);
+                GetCursorPos(out _lastPoint.WinPoint);
                 if (_lastPoint.Equals(_point))
                     continue;
 
@@ -94,7 +94,7 @@ namespace PopupBlocker.Controls
                     Height = 0;
                 });
                 Handle = handle;
-                _ = GetWindowRect(handle, out _lastRect.WinRect);
+                GetWindowRect(handle, out _lastRect.WinRect);
 
                 this.Dispatcher?.Invoke(() =>
                 {

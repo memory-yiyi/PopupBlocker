@@ -1,4 +1,5 @@
 using PopupBlocker.Core.Models;
+using PopupBlocker.Utility.Interfaces;
 using System.IO;
 using System.Text.Json;
 using InterceptorRuleList = System.Collections.Generic.List<PopupBlocker.Core.Models.InterceptorRules>;
@@ -153,24 +154,24 @@ namespace PopupBlocker.Core.Services
             _logger.Info($"拦截规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
         }
 
-        public static bool MatchRule(InterceptorRules? rules, string className, string windowTitle)
+        public static IPopupCount? FindRule(InterceptorRules? rules, string className, string windowTitle)
         {
             if (rules is null || !rules.IsActive)
-                return false;
+                return null;
             if (rules.IsProcessName)
-                return true;
-            return rules.MatchRule(className, windowTitle);
+                return rules;
+            return rules.FindRule(className, windowTitle);
         }
-        public bool MatchRule(string processName, string className, string windowTitle) => MatchRule(FindRules(processName), className, windowTitle);
+        public IPopupCount? FindRule(string processName, string className, string windowTitle) => FindRule(FindRules(processName), className, windowTitle);
 
-        public void ChangeRuleActivityStatus(Utility.Interfaces.IPopupInfo rule)
+        public void ChangeRuleActivityStatus(IPopupInfo rule)
         {
             rule.ChangeActivityStatus();
             SaveRuleList();
         }
 
         [Obsolete("请使用ResetRulesCount()方法")]
-        public void ResetRuleCount(Utility.Interfaces.IPopupCount rule)
+        public void ResetRuleCount(IPopupCount rule)
         {
             // ??? 你没事吧？仔细用你的小脑瓜子想一下，这有用吗？
             rule.ResetBlockCount();
@@ -179,7 +180,7 @@ namespace PopupBlocker.Core.Services
             // 你不会以为我写了就能用吧？（doge
         }
 
-        public void AddRuleCount(Utility.Interfaces.IPopupCount rule)
+        public void AddRuleCount(IPopupCount rule)
         {
             rule.AddBlockCount();
             SaveRuleList();
