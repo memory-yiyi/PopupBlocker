@@ -21,16 +21,14 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <ui:CardControl Grid.Row="0">
-            <ui:CardControl.Icon>
+        <controls:CardToggleSwitch Grid.Row="0"
+            IsChecked="{Binding IsEnableInterceptor}" Command="{Binding ChangeInterceptorStatusCommand}">
+            <controls:CardToggleSwitch.Icon>
                 <ui:SymbolIcon Symbol="ShieldCheckmark16"/>
-            </ui:CardControl.Icon>
-            <ui:CardControl.Header>
-                <ui:TextBlock Text="{Binding BlockedCount,StringFormat=共拦截 {0} 条弹窗}"/>
-            </ui:CardControl.Header>
-            <ui:ToggleSwitch IsChecked="{Binding IsEnableInterceptor}" Command="{Binding ChangeInterceptorStatusCommand}"/>
-        </ui:CardControl>
-        
+            </controls:CardToggleSwitch.Icon>
+            <ui:TextBlock Text="{Binding BlockedCount,StringFormat=共拦截 {0} 条弹窗}"/>
+        </controls:CardToggleSwitch>
+
         <controls:InterceptorRulesCard Grid.Row="1"
             ItemsSource="{Binding RuleList}"
             SaveRuleCommand="{Binding SaveRuleCommand}"
