@@ -21,33 +21,28 @@ namespace PopupBlocker.ViewModels
         public long BlockedCount => _ruleConfig.BlockedCount;
         public IEnumerable<InterceptorRules> RuleList { get; private set; }
 
-        private bool _isEnableInterceptor;
         public bool IsEnableInterceptor
         {
-            get => _isEnableInterceptor;
+            get => _popupBlocker.Status != Utility.Interfaces.Status.Init;
             set
             {
-                _isEnableInterceptor = value;
+                if (value)
+                {
+                    try
+                    {
+                        _popupBlocker.Start();
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        Singleton<LoggerService>.Instance.Error("拦截服务启动失败，请以管理员身份运行程序！");
+                    }
+                }
+                else
+                    _popupBlocker.Stop();
+                System.IO.File.WriteAllText(Core.AppPath.SettingFilePath, $"{(value ? '1' : '0')}");    // 太臭了，但只有这一个设置需要保存，，，
                 NotifyPropertyChanged();
             }
         }
-
-        public ICommand ChangeInterceptorStatusCommand => new RelayCommand(obj =>
-        {
-            if (IsEnableInterceptor)
-            {
-                try
-                {
-                    _popupBlocker.Start();
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    Singleton<LoggerService>.Instance.Error("拦截服务启动失败，请以管理员身份运行程序！");
-                }
-            }
-            else
-                _popupBlocker.Stop();
-        });
 
         public ICommand ResetAllCountCommand => new RelayCommand(obj =>
         {

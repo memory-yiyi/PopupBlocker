@@ -1,0 +1,36 @@
+﻿<Window x:Class="PopupBlocker.Views.Tray"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:tray="http://schemas.lepo.co/wpfui/2022/xaml/tray"
+        mc:Ignorable="d"
+        Title="PopupBlockerTray" Top="0" Left="0" Height="0" Width="0"
+        ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" Visibility="Hidden">
+    <tray:NotifyIcon
+        TooltipText="轻量级弹窗拦截器"
+        Icon="pack://application:,,,/Assets/PopupBlocker.ico"
+        FocusOnLeftClick="True"
+        MenuOnRightClick="True">
+        <tray:NotifyIcon.Menu>
+            <ContextMenu>
+                <ui:MenuItem Header="主界面" Click="niMenu_Home_Click">
+                    <ui:MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="Home16"/>
+                    </ui:MenuItem.Icon>
+                </ui:MenuItem>
+                <ui:MenuItem Header="设置" Click="niMenu_Setting_Click">
+                    <ui:MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="Settings16"/>
+                    </ui:MenuItem.Icon>
+                </ui:MenuItem>
+                <ui:MenuItem Header="关闭应用" Click="niMenu_Close_Click">
+                    <ui:MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="Dismiss16"/>
+                    </ui:MenuItem.Icon>
+                </ui:MenuItem>
+            </ContextMenu>
+        </tray:NotifyIcon.Menu>
+    </tray:NotifyIcon>
+</Window>

@@ -22,7 +22,7 @@
         </Grid.RowDefinitions>
 
         <controls:CardToggleSwitch Grid.Row="0"
-            IsChecked="{Binding IsEnableInterceptor}" Command="{Binding ChangeInterceptorStatusCommand}">
+            IsChecked="{Binding IsEnableInterceptor}">
             <controls:CardToggleSwitch.Icon>
                 <ui:SymbolIcon Symbol="ShieldCheckmark16"/>
             </controls:CardToggleSwitch.Icon>

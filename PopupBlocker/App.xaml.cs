@@ -47,6 +47,10 @@ namespace PopupBlocker
 #endif
             // 正常启动逻辑
             base.OnStartup(e);
+
+#if true    // 上面的空间用于临时测试，有需要记得改为false
+            new Views.Tray(e.Args.Length == 0 || e.Args[0] != Core.AppPath.AutoRunSwitchProperty).Show();
+#endif
         }
 
         private static bool IsRunningAsAdministrator()

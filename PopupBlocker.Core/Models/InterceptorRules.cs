@@ -43,7 +43,7 @@ namespace PopupBlocker.Core.Models
         {
             if (IsProcessName)
                 throw new InvalidOperationException("按进程名称拦截时，不能添加规则");
-            if (Rules!.Exists(r => r.Pattern == rule.Pattern && r.IsWindowClass == rule.IsWindowClass))
+            if (Rules!.Exists(r => r.WindowClass == rule.WindowClass && r.WindowTitle == rule.WindowTitle))
                 return false;
             Rules.Add(rule);
             return true;

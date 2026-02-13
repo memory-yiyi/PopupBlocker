@@ -272,8 +272,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:CardToggleSwitch}">
                     <ui:CardControl Icon="{TemplateBinding Icon}" Header="{TemplateBinding Content}">
-                        <ui:ToggleSwitch IsChecked="{Binding IsChecked,RelativeSource={RelativeSource TemplatedParent}}"
-                            Command="{Binding Command,RelativeSource={RelativeSource TemplatedParent}}"/>
+                        <ui:ToggleSwitch IsChecked="{Binding IsChecked,RelativeSource={RelativeSource TemplatedParent}}"/>
                     </ui:CardControl>
                 </ControlTemplate>
             </Setter.Value>

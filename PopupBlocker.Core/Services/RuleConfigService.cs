@@ -12,7 +12,7 @@ namespace PopupBlocker.Core.Services
         // 存储拦截规则的列表
         private readonly InterceptorRuleList _ruleList = [];
         // JSON 序列化选项，用于美化输出和驼峰命名
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             WriteIndented = true,

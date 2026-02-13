@@ -33,18 +33,6 @@ namespace PopupBlocker.Controls
             set => SetValue(IsCheckedProperty, value);
         }
 
-        public static readonly DependencyProperty CommandProperty =
-            DependencyProperty.Register(
-                nameof(Command),
-                typeof(ICommand),
-                typeof(CardToggleSwitch));
-
-        public ICommand Command
-        {
-            get => (ICommand)GetValue(CommandProperty);
-            set => SetValue(CommandProperty, value);
-        }
-
         static CardToggleSwitch()
         {
             DefaultStyleKeyProperty.OverrideMetadata(
