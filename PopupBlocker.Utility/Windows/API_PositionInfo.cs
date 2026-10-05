@@ -4,6 +4,10 @@ namespace PopupBlocker.Utility.Windows
 {
     public static partial class WinAPI
     {
+        #region 常量
+        public const uint GA_ROOT = 2;
+        #endregion
+
         #region 结构
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
@@ -25,6 +29,9 @@ namespace PopupBlocker.Utility.Windows
         #region 方法
         [DllImport("user32.dll")]
         public static extern UIntPtr WindowFromPoint(POINT point);
+
+        [DllImport("user32.dll")]
+        public static extern UIntPtr GetAncestor(UIntPtr hWnd, uint gaFlags);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

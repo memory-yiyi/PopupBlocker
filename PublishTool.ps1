@@ -92,7 +92,7 @@ Remove-Item .\publish -Recurse
 New-Item .\publish\PopupBlocker\document -Type Directory
 Copy-Item .\README.md .\publish\PopupBlocker\document
 Copy-Item .\VersionLog.md .\publish\PopupBlocker\document
-Copy-Item .\ContributorChanges .\publish\PopupBlocker\document
+Copy-Item .\ContributorChanges .\publish\PopupBlocker\document -Recurse
 New-Item .\publish\PopupBlocker\license -Type Directory
 Copy-Item .\LICENSE.txt .\publish\PopupBlocker\license
 Copy-Item .\THIRD_PARTY_NOTICES.md .\publish\PopupBlocker\license

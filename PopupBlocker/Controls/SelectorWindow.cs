@@ -79,6 +79,7 @@ namespace PopupBlocker.Controls
                 _point = _lastPoint.WinPoint;
 
                 var handle = WindowFromPoint(_point);
+                handle = GetAncestor(handle, GA_ROOT);
                 if (handle == UIntPtr.Zero || handle == Handle)
                     continue;
                 if (_handleBlackList.Contains(handle))
