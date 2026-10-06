@@ -10,7 +10,7 @@ namespace PopupBlocker.Views.Pages
         public SettingPage()
         {
             InitializeComponent();
-            this.DataContext = Utility.Commons.Singleton<ServiceManager>.Instance.GetService<ViewModels.SettingViewModel>(ServiceType.DefaultSettingService);
+            this.DataContext = Utility.Commons.Singleton<ServiceManager>.Instance.GetCurrentSettingService<ViewModels.SettingViewModel>();
         }
     }
 }

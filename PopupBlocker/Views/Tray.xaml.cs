@@ -13,7 +13,7 @@ namespace PopupBlocker.Views
         {
             // 加载服务，确保核心能正常运行
             // 其创建了一些IDisposable对象，记得在OnClosed中释放资源
-            Singleton<ServiceManager>.Instance.RegisterService(ServiceType.DefaultSettingService, ViewModels.SettingViewModel.LoadSetting());
+            Singleton<ServiceManager>.Instance.InitSettingService(ViewModels.SettingViewModel.LoadSetting());
             StartActivateListener();
             // 创建主窗口，按需显示
             if (isShowMainWindow)

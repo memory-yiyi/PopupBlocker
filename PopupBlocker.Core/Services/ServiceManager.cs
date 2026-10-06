@@ -7,11 +7,34 @@
         public ServiceManager()
         {
             _services = [];
-            _services.Add(ServiceType.DefaultLoggerService, new LoggerService());
-            _services.Add(ServiceType.DefaultRuleConfigService, new RuleConfigService((LoggerService)_services[ServiceType.DefaultLoggerService]));
-            _services.Add(ServiceType.DefaultPopupBlockService, new PopupBlockService((LoggerService)_services[ServiceType.DefaultLoggerService], (RuleConfigService)_services[ServiceType.DefaultRuleConfigService]));
-            _services.Add(ServiceType.DefaultAutoRunService, new AutoRunService());
+            CurrentLoggerServiceType = ServiceType.DefaultLoggerService;
+            _services.Add(CurrentLoggerServiceType, new LoggerService());
+            CurrentRuleConfigServiceType = ServiceType.DefaultRuleConfigService;
+            _services.Add(CurrentRuleConfigServiceType, new RuleConfigService(logger: CurrentLoggerService));
+            CurrentPopupBlockServiceType = ServiceType.DefaultPopupBlockService;
+            _services.Add(CurrentPopupBlockServiceType, new PopupBlockService());
+            CurrentAutoRunServiceType = ServiceType.DefaultAutoRunService;
+            _services.Add(CurrentAutoRunServiceType, new AutoRunService());
+            CurrentSettingServiceType = ServiceType.DefaultSettingService;
         }
+
+        #region 当前服务设置与查询
+        public int CurrentLoggerServiceType { get; set; }
+        public LoggerService CurrentLoggerService { get => GetService<LoggerService>(CurrentLoggerServiceType) ?? GetService<LoggerService>(ServiceType.DefaultLoggerService)!; }
+
+        public int CurrentRuleConfigServiceType { get; set; }
+        public RuleConfigService CurrentRuleConfigService { get => GetService<RuleConfigService>(CurrentRuleConfigServiceType) ?? GetService<RuleConfigService>(ServiceType.DefaultRuleConfigService)!; }
+
+        public int CurrentPopupBlockServiceType { get; set; }
+        public PopupBlockService CurrentPopupBlockService { get => GetService<PopupBlockService>(CurrentPopupBlockServiceType) ?? GetService<PopupBlockService>(ServiceType.DefaultPopupBlockService)!; }
+
+        public int CurrentAutoRunServiceType { get; set; }
+        public AutoRunService CurrentAutoRunService { get => GetService<AutoRunService>(CurrentAutoRunServiceType) ?? GetService<AutoRunService>(ServiceType.DefaultAutoRunService)!; }
+
+        public int CurrentSettingServiceType { get; set; }
+        public T GetCurrentSettingService<T>() where T : IService => GetService<T>(CurrentSettingServiceType) ?? GetService<T>(ServiceType.DefaultSettingService)!;
+        public bool InitSettingService(IService service) => RegisterService(ServiceType.DefaultSettingService, service);
+        #endregion
 
         public T? GetService<T>(int sKey) where T : IService
         {

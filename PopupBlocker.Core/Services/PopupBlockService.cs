@@ -1,9 +1,12 @@
+using PopupBlocker.Utility.Commons;
 using PopupBlocker.Utility.Interfaces;
 
 namespace PopupBlocker.Core.Services
 {
-    public class PopupBlockService(LoggerService loggerService, RuleConfigService ruleConfigService) : ETWThreadMonitor, IService
+    public class PopupBlockService : ETWThreadMonitor, IService
     {
+        private static ServiceManager ServiceManager => Singleton<ServiceManager>.Instance;
+
         #region IService
         public bool Switch
         {
@@ -22,26 +25,26 @@ namespace PopupBlocker.Core.Services
         protected override void OnStart()
         {
             base.OnStart();
-            _logger.Info("拦截器已启动");
+            ServiceManager.CurrentLoggerService.Info("拦截器已启动");
         }
 
         protected override void OnStop()
         {
             base.OnStop();
-            _logger.Info("拦截器已停止");
+            ServiceManager.CurrentLoggerService.Info("拦截器已停止");
         }
         #endregion
 
         #region 监控逻辑
-        private readonly LoggerService _logger = loggerService;
         private readonly Dictionary<Models.BlockRules, WindowCloseService> _checkList = [];
 
         protected override void OnThreadCreated(Microsoft.Diagnostics.Tracing.Parsers.Kernel.ThreadTraceData data)
         {
-            var rules = ruleConfigService.FindRules(data.ProcessName);
+            var rules = ServiceManager.CurrentRuleConfigService.FindRules(data.ProcessName);
             if (rules is not null)
             {
-                _checkList.TryAdd(rules, new WindowCloseService(rules, _logger, ruleConfigService));
+                if (!_checkList.ContainsKey(rules))
+                    _checkList.Add(rules, new WindowCloseService(rules));
                 _checkList[rules].CheckAndBlockWindows();
             }
         }

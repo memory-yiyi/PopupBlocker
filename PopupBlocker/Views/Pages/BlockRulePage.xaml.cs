@@ -12,7 +12,7 @@ namespace PopupBlocker.Views.Pages
         {
             InitializeComponent();
             this.DataContext = new ViewModels.PopupBlockViewModel();
-            ctsHeader.DataContext = Utility.Commons.Singleton<ServiceManager>.Instance.GetService<ViewModels.SettingViewModel>(ServiceType.DefaultSettingService);
+            ctsHeader.DataContext = Utility.Commons.Singleton<ServiceManager>.Instance.GetCurrentSettingService<ViewModels.SettingViewModel>();
         }
 
         private void ResizeMiddleHeight(object? sender, SizeChangedEventArgs? e)

@@ -1,21 +1,24 @@
 using Microsoft.Win32;
 using PopupBlocker.Core.Models;
+using PopupBlocker.Core.Services;
 using PopupBlocker.Utility.Commons;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace PopupBlocker.ViewModels
 {
-    public class PopupBlockViewModel : ViewModelServiceBase
+    public class PopupBlockViewModel : ViewModelBase
     {
+        private static ServiceManager ServiceManager => Singleton<ServiceManager>.Instance;
+
         public PopupBlockViewModel()
         {
-            RuleConfigService.RulesChanged += RuleChangedEvent;
-            RuleChangedEvent(RuleConfigService.GetAllRules());
+            ServiceManager.CurrentRuleConfigService.RulesChanged += RuleChangedEvent;
+            RuleChangedEvent(ServiceManager.CurrentRuleConfigService.GetAllRules());
         }
 
         #region 属性
-        public long BlockedCount => RuleConfigService.BlockedCount;
+        public long BlockedCount => ServiceManager.CurrentRuleConfigService.BlockedCount;
 
         /// <summary>
         /// 界面绑定的规则列表。
@@ -27,7 +30,7 @@ namespace PopupBlocker.ViewModels
 
         public ICommand ResetAllCountCommand => new RelayCommand(obj =>
         {
-            RuleConfigService.ResetAllCounts();
+            ServiceManager.CurrentRuleConfigService.ResetAllCounts();
         });
 
         public ICommand ImportRulesCommand => new RelayCommand(obj =>
@@ -38,7 +41,7 @@ namespace PopupBlocker.ViewModels
                 Title = "导入配置"
             };
             if (openFileDialog.ShowDialog() == true)
-                RuleConfigService.LoadRuleList(openFileDialog.FileName);
+                ServiceManager.CurrentRuleConfigService.LoadRuleList(openFileDialog.FileName);
         });
 
         public ICommand ExportRulesCommand => new RelayCommand(obj =>
@@ -50,7 +53,7 @@ namespace PopupBlocker.ViewModels
                 Title = "导出配置"
             };
             if (saveFileDialog.ShowDialog() == true)
-                RuleConfigService.SaveRuleList(saveFileDialog.FileName, false);
+                ServiceManager.CurrentRuleConfigService.SaveRuleList(saveFileDialog.FileName, false);
         });
 
         public ICommand WindowSelectCommand => new RelayCommand(obj =>
@@ -60,14 +63,14 @@ namespace PopupBlocker.ViewModels
 
         public ICommand SaveRuleCommand => new RelayCommand(obj =>
         {
-            RuleConfigService.SaveRuleList(isNotifyUI: false);
+            ServiceManager.CurrentRuleConfigService.SaveRuleList(isNotifyUI: false);
         });
 
         public ICommand ResetCountCommand => new RelayCommand(obj =>
         {
             if (obj is BlockRules rules)
             {
-                RuleConfigService.ResetRulesCount(rules);
+                ServiceManager.CurrentRuleConfigService.ResetRulesCount(rules);
             }
         });
 
@@ -75,7 +78,7 @@ namespace PopupBlocker.ViewModels
         {
             if (obj is RemoveRuleParameters parameters)
             {
-                RuleConfigService.RemoveRule((BlockRules)parameters.Item1, (InterceptorRule?)parameters.Item2);
+                ServiceManager.CurrentRuleConfigService.RemoveRule((BlockRules)parameters.Item1, (InterceptorRule?)parameters.Item2);
             }
         });
         #endregion
@@ -83,9 +86,12 @@ namespace PopupBlocker.ViewModels
         #region 方法
         private void RuleChangedEvent(IEnumerable<BlockRules> ruleList)
         {
-            RuleList.Clear();
-            foreach (var rules in ruleList)
-                RuleList.Add(rules);
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                RuleList.Clear();
+                foreach (var rules in ruleList)
+                    RuleList.Add(rules);
+            });
             NotifyPropertyChanged(nameof(BlockedCount));
         }
         #endregion

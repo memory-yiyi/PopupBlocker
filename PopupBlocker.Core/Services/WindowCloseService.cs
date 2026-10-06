@@ -1,13 +1,14 @@
 ﻿using PopupBlocker.Core.Models;
+using PopupBlocker.Utility.Commons;
 using PopupBlocker.Utility.Windows;
 
 namespace PopupBlocker.Core.Services
 {
-    internal class WindowCloseService(BlockRules rules, LoggerService loggerService, RuleConfigService ruleConfigService) : Utility.Commons.WindowInfo
+    public class WindowCloseService(BlockRules rules)
     {
+        private static ServiceManager ServiceManager => Singleton<ServiceManager>.Instance;
         private readonly BlockRules _rules = rules;
-        private readonly LoggerService _logger = loggerService;
-        private readonly RuleConfigService _config = ruleConfigService;
+        private readonly WindowInfo _windowInfo = new();
         private readonly object _lock = new();
         private byte _loopCount;
         private const int _loopCountMax = 5;
@@ -38,27 +39,27 @@ namespace PopupBlocker.Core.Services
                 if (hWnd == UIntPtr.Zero || !WinAPI.IsWindowVisible(hWnd))
                     return true;
 
-                Handle = hWnd;
-                var processName = ProcessName;
+                _windowInfo.Handle = hWnd;
+                var processName = _windowInfo.ProcessName;
 
                 if (processName != _rules!.ProcessName)
                     return true;
 
-                var className = WindowClass;
-                var windowTitle = WindowTitle;
+                var className = _windowInfo.WindowClass;
+                var windowTitle = _windowInfo.WindowTitle;
 
-                _logger.Debug($"检查窗口：{processName} - {className} - {windowTitle}");
+                ServiceManager.CurrentLoggerService.Debug($"检查窗口：{processName} - {className} - {windowTitle}");
                 var rule = RuleConfigService.FindRule(_rules, className, windowTitle);
                 if (rule is null)
                     return true;
-                _logger.Info($"拦截窗口：{processName} - {className} - {windowTitle}");
+                ServiceManager.CurrentLoggerService.Info($"拦截窗口：{processName} - {className} - {windowTitle}");
 
                 CloseWindowSafely(hWnd);
-                _config.AddRuleCount(rule);
+                ServiceManager.CurrentRuleConfigService.AddRuleCount(rule);
             }
             catch (Exception ex)
             {
-                _logger.Warning($"检查窗口时出错：{ex.Message}");
+                ServiceManager.CurrentLoggerService.Warning($"检查窗口时出错：{ex.Message}");
             }
             return true;
         }
@@ -78,7 +79,7 @@ namespace PopupBlocker.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.Debug($"关闭窗口时出错：{ex.Message}");
+                ServiceManager.CurrentLoggerService.Debug($"关闭窗口时出错：{ex.Message}");
                 // 最后手段：隐藏窗口
                 WinAPI.ShowWindow(hWnd, WinAPI.SW_HIDE);
             }

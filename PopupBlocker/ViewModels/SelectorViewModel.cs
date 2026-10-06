@@ -1,12 +1,15 @@
 ﻿using PopupBlocker.Controls;
+using PopupBlocker.Core.Services;
 using PopupBlocker.Utility.Commons;
 using System.Windows;
 using System.Windows.Input;
 
 namespace PopupBlocker.ViewModels
 {
-    public class SelectorViewModel : ViewModelServiceBase
+    public class SelectorViewModel : ViewModelBase
     {
+        private static ServiceManager ServiceManager => Singleton<ServiceManager>.Instance;
+
         public SelectorViewModel()
         {
             ConfirmToolVisibility = Visibility.Hidden;
@@ -52,7 +55,7 @@ namespace PopupBlocker.ViewModels
         {
             if (obj is SelectorWindow selector)
             {
-                RuleConfigService.AddRule(ProcessName);
+                ServiceManager.CurrentRuleConfigService.AddRule(ProcessName);
                 selector.Close();
             }
         });
@@ -61,7 +64,7 @@ namespace PopupBlocker.ViewModels
         {
             if (obj is SelectorWindow selector)
             {
-                RuleConfigService.AddRule(ProcessName, _windowInfo.WindowClass, _windowInfo.WindowTitle);
+                ServiceManager.CurrentRuleConfigService.AddRule(ProcessName, _windowInfo.WindowClass, _windowInfo.WindowTitle);
                 selector.Close();
             }
         });

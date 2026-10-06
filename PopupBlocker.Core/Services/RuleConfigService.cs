@@ -5,6 +5,8 @@ namespace PopupBlocker.Core.Services
 {
     public class RuleConfigService : IService
     {
+        private static ServiceManager ServiceManager => Singleton<ServiceManager>.Instance;
+
         #region IService
         public bool Switch { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         #endregion
@@ -12,14 +14,11 @@ namespace PopupBlocker.Core.Services
         #region 私有字段
         // 存储拦截规则的列表
         private readonly BlockRuleList _ruleList = [];
-        // 日志服务，用于记录日志信息
-        private readonly LoggerService _logger;
         #endregion
 
-        public RuleConfigService(LoggerService loggerService)
+        public RuleConfigService(LoggerService? logger = null)
         {
-            _logger = loggerService;
-            LoadRuleList();
+            LoadRuleList(logger: logger);
         }
 
         /// <summary>
@@ -29,7 +28,7 @@ namespace PopupBlocker.Core.Services
         public long BlockedCount => _ruleList.Sum(r => r.BlockedCount);
 
         #region 规则列表的公共方法
-        public void LoadRuleList(string? filePath = null)
+        public void LoadRuleList(string? filePath = null, LoggerService? logger = null)
         {
             var fp = filePath ?? AppPath.RuleConfigFilePath;
             _ruleList.Clear();
@@ -43,10 +42,10 @@ namespace PopupBlocker.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning($"加载拦截规则失败：{ex.Message}");
+                (logger ?? ServiceManager.CurrentLoggerService).Warning($"加载拦截规则失败：{ex.Message}");
                 return;
             }
-            _logger.Info($"拦截规则已成功加载：{fp}");
+            (logger ?? ServiceManager.CurrentLoggerService).Info($"拦截规则已成功加载：{fp}");
         }
 
         public void SaveRuleList(string? filePath = null, bool isNotifyUI = true)
@@ -58,14 +57,14 @@ namespace PopupBlocker.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning($"保存拦截规则失败：{ex.Message}");
+                ServiceManager.CurrentLoggerService.Warning($"保存拦截规则失败：{ex.Message}");
                 return;
             }
             var info = $"拦截规则已成功保存：{fp}";
             if (filePath is null)
-                _logger.Debug(info);
+                ServiceManager.CurrentLoggerService.Debug(info);
             else
-                _logger.Info(info);
+                ServiceManager.CurrentLoggerService.Info(info);
             if (isNotifyUI)
                 RulesChanged?.Invoke(GetAllRules());
         }
@@ -76,7 +75,7 @@ namespace PopupBlocker.Core.Services
         {
             _ruleList.ForEach(r => r.ResetBlockCount());
             SaveRuleList();
-            _logger.Info("所有拦截规则的计数已重置");
+            ServiceManager.CurrentLoggerService.Info("所有拦截规则的计数已重置");
         }
 
         public void ResetRulesCount(BlockRules rules)
@@ -84,7 +83,7 @@ namespace PopupBlocker.Core.Services
             // 能重置就是存在规则，存在就可以直接指定规则，无需搜索
             rules.ResetBlockCount();
             SaveRuleList();
-            _logger.Info($"进程的拦截规则计数已重置：{rules.ProcessName}");
+            ServiceManager.CurrentLoggerService.Info($"进程的拦截规则计数已重置：{rules.ProcessName}");
         }
 
         /* 这是浅拷贝，所以你对新列表的修改也会影响原始列表
@@ -107,10 +106,10 @@ namespace PopupBlocker.Core.Services
                     var newRules = new BlockRules(processName);
                     _ruleList.Add(newRules);
                     SaveRuleList();
-                    _logger.Info($"拦截规则已成功添加：{newRules}");
+                    ServiceManager.CurrentLoggerService.Info($"拦截规则已成功添加：{newRules}");
                 }
                 else
-                    _logger.Warning($"拦截规则已存在：{rules}");
+                    ServiceManager.CurrentLoggerService.Warning($"拦截规则已存在：{rules}");
             }
             else
             {
@@ -119,12 +118,12 @@ namespace PopupBlocker.Core.Services
                     var newRules = new BlockRules(processName, [rule]);
                     _ruleList.Add(newRules);
                     SaveRuleList();
-                    _logger.Info($"拦截规则已成功添加：{newRules.ProcessName} - {rule}");
+                    ServiceManager.CurrentLoggerService.Info($"拦截规则已成功添加：{newRules.ProcessName} - {rule}");
                 }
                 else if (rules.AddRule(rule))
-                    _logger.Info($"拦截规则已成功添加：{rules.ProcessName} - {rule}");
+                    ServiceManager.CurrentLoggerService.Info($"拦截规则已成功添加：{rules.ProcessName} - {rule}");
                 else
-                    _logger.Warning($"拦截规则已存在：{rules.ProcessName} - {rule}");
+                    ServiceManager.CurrentLoggerService.Warning($"拦截规则已存在：{rules.ProcessName} - {rule}");
             }
         }
         public void AddRule(string processName, string className, string windowTitle, bool isWindowClass = true) => AddRule(processName, new InterceptorRule(className, windowTitle, isWindowClass));
@@ -140,7 +139,7 @@ namespace PopupBlocker.Core.Services
                     _ruleList.Remove(rules);
             }
             SaveRuleList();
-            _logger.Info($"拦截规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
+            ServiceManager.CurrentLoggerService.Info($"拦截规则已成功删除：{(rule is null ? rules : $"{rules.ProcessName} - {rule}")}");
         }
 
         public static IPopupCount? FindRule(BlockRules? rules, string className, string windowTitle)

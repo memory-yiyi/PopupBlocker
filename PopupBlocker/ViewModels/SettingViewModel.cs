@@ -1,21 +1,24 @@
 ﻿using PopupBlocker.Core;
+using PopupBlocker.Core.Services;
 using PopupBlocker.Utility.Commons;
 using System.Text.Json.Serialization;
 
 namespace PopupBlocker.ViewModels
 {
-    public class SettingViewModel : ViewModelServiceBase, Core.Services.IService
+    public class SettingViewModel : ViewModelBase, IService
     {
+        private static ServiceManager ServiceManager => Singleton<ServiceManager>.Instance;
+
         /// <summary>
         /// 是否启用日志记录
         /// </summary>
         [JsonPropertyName("isEnableLog")]
         public bool IsEnableLog
         {
-            get => LoggerService.Switch;
+            get => ServiceManager.CurrentLoggerService.Switch;
             set
             {
-                LoggerService.Switch = value;
+                ServiceManager.CurrentLoggerService.Switch = value;
                 NotifyPropertyChanged();
             }
         }
@@ -25,21 +28,21 @@ namespace PopupBlocker.ViewModels
         [JsonPropertyName("isEnableBlock")]
         public bool IsEnableBlock
         {
-            get => PopupBlockService.Switch;
+            get => ServiceManager.CurrentPopupBlockService.Switch;
             set
             {
                 try
                 {
-                    PopupBlockService.Switch = value;
+                    ServiceManager.CurrentPopupBlockService.Switch = value;
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    LoggerService.Error("拦截服务启动失败，请以管理员身份运行程序！");
+                    ServiceManager.CurrentLoggerService.Error("拦截服务启动失败，请以管理员身份运行程序！");
                 }
                 catch (Exception ex)
                 {
                     // 启动失败不能中断整个设置的加载，否则用户其余的设置会被一起丢掉
-                    LoggerService.Error($"拦截服务启动失败：{ex.Message}");
+                    ServiceManager.CurrentLoggerService.Error($"拦截服务启动失败：{ex.Message}");
                 }
                 NotifyPropertyChanged();
             }
@@ -50,20 +53,20 @@ namespace PopupBlocker.ViewModels
         [JsonPropertyName("isAutoRun")]
         public bool IsAutoRun
         {
-            get => AutoRunService.Switch;
+            get => ServiceManager.CurrentAutoRunService.Switch;
             set
             {
                 try
                 {
-                    AutoRunService.Switch = value;
+                    ServiceManager.CurrentAutoRunService.Switch = value;
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    LoggerService.Error("设置开机自启失败，请以管理员身份运行程序！");
+                    ServiceManager.CurrentLoggerService.Error("设置开机自启失败，请以管理员身份运行程序！");
                 }
                 catch (Exception ex)
                 {
-                    LoggerService.Error($"设置开机自启失败：{ex.Message}");
+                    ServiceManager.CurrentLoggerService.Error($"设置开机自启失败：{ex.Message}");
                 }
                 NotifyPropertyChanged();
             }
@@ -84,7 +87,7 @@ namespace PopupBlocker.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    LoggerService.Warning($"切换主题失败：{ex.Message}");
+                    ServiceManager.CurrentLoggerService.Warning($"切换主题失败：{ex.Message}");
                 }
                 NotifyPropertyChanged();
             }
@@ -104,7 +107,7 @@ namespace PopupBlocker.ViewModels
             {
                 // 读不出来就退回默认值，但要把原因记下来，
                 // 否则用户只会看到"设置莫名其妙全没了"
-                LoggerService.Warning($"读取设置失败，将使用默认设置：{ex.Message}");
+                ServiceManager.CurrentLoggerService.Warning($"读取设置失败，将使用默认设置：{ex.Message}");
                 setting = new SettingViewModel();
             }
             setting.ConfirmLoaded();
@@ -120,7 +123,7 @@ namespace PopupBlocker.ViewModels
             catch (Exception ex)
             {
                 // 保存失败只记录，界面上已经生效的开关不受影响
-                LoggerService.Error($"保存设置失败：{ex.Message}");
+                ServiceManager.CurrentLoggerService.Error($"保存设置失败：{ex.Message}");
             }
         }
         #endregion
